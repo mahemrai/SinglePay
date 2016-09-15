@@ -1,14 +1,14 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
-use SinglePay\PaymentService\AbstractPaymentService;
+use SinglePay\PaymentService\PaymentServiceInterface;
 
 /**
  * @package SinglePay
- * @uses    AbstractPaymentService
+ * @uses    PaymentServiceInterface
  * @author  Mahendra Rai
  */
-class ElementService
+class ElementService implements PaymentServiceInterface
 {
     /**
      * @var array
@@ -23,13 +23,28 @@ class ElementService
         $this->config = $config;
     }
 
-    public function hello()
+    public function setup($data)
     {
-        echo 'Hello Element';die;
+
     }
 
-    public function processPayment()
+    public function processPayment($data)
     {
         echo 'Processing...';die;
+    }
+
+    public function refund($data)
+    {
+        echo 'Refunding...';die;
+    }
+
+    public function saveCard($data)
+    {
+        echo 'Saving...';die;
+    }
+
+    public function payWithSavedCard($data)
+    {
+        echo 'Paying...';die;
     }
 }
