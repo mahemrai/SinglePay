@@ -1,6 +1,9 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
+use SinglePay\PaymentService\Element\Express\HealthCheck;
+use SinglePay\PaymentService\Element\Express\Application;
+use SinglePay\PaymentService\Element\Express\Credentials;
 use SinglePay\PaymentService\PaymentServiceInterface;
 
 /**
@@ -23,9 +26,20 @@ class ElementService implements PaymentServiceInterface
         $this->config = $config;
     }
 
-    public function setup($data)
+    public function test($data)
     {
+        $application = new Application($this->config['applicationId'], $this->config['applicationName'], $this->config['applicationVersion']);
+        $credentials = new Credentials($this->config['accountId'], $this->config['accountToken'], $this->config['acceptorId']);
+        $healthCheck = new HealthCheck($credentials, $application);
 
+        $client = new \SoapClient($this->config['uri'], array('features' => 1));
+
+        $result = $client->HealthCheck(array(
+            'credentials' => $credentials,
+            'application' => $application
+        ));
+
+        var_dump($result);die;
     }
 
     public function processPayment($data)
