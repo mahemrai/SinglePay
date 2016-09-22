@@ -1,5 +1,8 @@
 <?php
-namespace SinglePay\PaymentService\Element\Express;
+namespace SinglePay\PaymentService\Element\Express\Method;
+
+use SinglePay\PaymentService\Element\Express\Type\Application;
+use SinglePay\PaymentService\Element\Express\Type\Credentials;
 
 class HealthCheck
 {
