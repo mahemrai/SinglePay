@@ -1,6 +1,7 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
+use SinglePay\SinglePayData;
 use SinglePay\PaymentService\Element\Express\Enum\PaymentAccountType;
 use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterBatchStatus;
 use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterOption;
@@ -39,8 +40,9 @@ class ExpressFactory
      * @param  array $data
      * @return \SinglePay\PaymentService\Element\Express\Method\TransactionSetup
      */
-    public static function buildTransactionSetup($config, $data, $isPOS = false)
+    public static function buildTransactionSetup($config, SinglePayData $data, $isPOS = false)
     {
+        $extras = $data->getExtras();
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
 
@@ -58,11 +60,11 @@ class ExpressFactory
         // depending on whether the client is POS or Web - build an appropriate objects to
         // initiate the transaction process
         if ($isPOS) {
-            $transaction = TransactionBuilder::buildPOSTransaction($config, (string) $data['orderAmount']);
+            $transaction = TransactionBuilder::buildPOSTransaction($config, $data->getOrderAmount());
             $transactionSetup = TransactionSetupBuilder::buildPOSSaleTransactionSetup($config);
             $terminal = TerminalBuilder::buildPOSTerminal($config);
         } else {
-            $transaction = TransactionBuilder::buildStandardTransaction($config, (string) $data['orderAmount']);
+            $transaction = TransactionBuilder::buildStandardTransaction($config, $data->getOrderAmount());
 
             // Element's Hosted Payment supports process to create and update accounts along with a
             // credit card sale. Therefore we need to ensure that we are sending appropriate parameter 
@@ -70,9 +72,9 @@ class ExpressFactory
             // 
             // Here, the method parameter can be either present in the data array or not. If a method
             // parameter is passed in then it needs to be either 'create' or 'update'.
-            if (isset($data['method']) && $data['method'] === 'create') {
+            if (!is_null($extras['method']) && $extras['method'] === 'create') {
                 $transactionSetup = TransactionSetupBuilder::buildAccountCreateTransactionSetup($config);
-            } elseif(isset($data['method']) && $data['method'] === 'update') {
+            } elseif(!is_null($extras['method']) && $extras['method'] === 'update') {
                 $transactionSetup = TransactionSetupBuilder::buildAccountUpdateTransactionSetup($config);
             } else {
                 $transactionSetup = TransactionSetupBuilder::buildStandardSaleTransactionSetup($config);
@@ -110,23 +112,23 @@ class ExpressFactory
             PASSUpdaterOption::AutoUpdateEnabled
         );
 
-        if (isset($data['method']) && strcasecmp($data['method'], 'create') == 0) {
-            if (!isset($data['customerNo'])) {
+        if (!is_null($extras['method']) && strcasecmp($extras['method'], 'create') == 0) {
+            if (is_null($data->getCustomerNo())) {
                 throw new \Exception("Parameter 'customerNo' is required for this action.");
             }
 
-            $paymentAccount->PaymentAccountReferenceNumber = $data['customerNo'];
-        } elseif (isset($data['method']) && strcasecmp($data['method'], 'update') == 0) {
-            if (!isset($data['customerNo'])) {
+            $paymentAccount->PaymentAccountReferenceNumber = $data->getCustomerNo();
+        } elseif (!is_null($extras['method']) && strcasecmp($extras['method'], 'update') == 0) {
+            if (is_null($data->getCustomerNo())) {
                 throw new \Exception("Parameter 'customerNo' is required for this action.");
             }
 
-            if (!isset($data['paymentToken'])) {
+            if (!isset($extras['paymentToken'])) {
                 throw new \Exception("Parameter 'paymentToken' is required for this action.");
             }
 
-            $paymentAccount->PaymentAccountID = $data['paymentToken'];
-            $paymentAccount->PaymentAccountReferenceNumber = $data['customerNo'];
+            $paymentAccount->PaymentAccountID = $extras['paymentToken'];
+            $paymentAccount->PaymentAccountReferenceNumber = $data->getCustomerNo();
         }
 
         return new TransactionSetup(
@@ -139,5 +141,11 @@ class ExpressFactory
             $paymentAccount,
             null
         );
+    }
+
+    public static function buildCreditCardAVSOnly($config, SinglePayData $data)
+    {
+        $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
+        $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
     }
 }

@@ -1,7 +1,8 @@
 <?php
 namespace SinglePay\PaymentService;
 
-use SinglePay\SPConfig;
+use SinglePay\SinglePayConfig;
+use SinglePay\SinglePayData;
 use SinglePay\PaymentService\Element\ElementService;
 
 /**
@@ -14,11 +15,11 @@ class PaymentServiceFactory
      * @param  string $paymentGatewayName
      * @return mixed
      */
-    public static function createPaymentService(SPConfig $config)
+    public static function createPaymentService(SinglePayConfig $config, SinglePayData $data)
     {
         switch ($config->getServiceName()) {
             case 'element':
-                return new ElementService($config->getServiceConfig());
+                return new ElementService($config->getServiceConfig(), $data);
             default:
                 throw new \Exception('Payment service does not exist.');
         }

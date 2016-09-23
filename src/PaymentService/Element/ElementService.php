@@ -1,6 +1,7 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
+use SinglePay\SinglePayData;
 use SinglePay\PaymentService\PaymentServiceInterface;
 use SinglePay\PaymentService\Element\ExpressFactory;
 
@@ -17,14 +18,20 @@ class ElementService implements PaymentServiceInterface
     protected $config;
 
     /**
+     * @var SinglePayData
+     */
+    protected $data;
+
+    /**
      * @param array $config
      */
-    public function __construct($config)
+    public function __construct($config, SinglePayData $data)
     {
         $this->config = $config;
+        $this->data = $data;
     }
 
-    public function healthCheck($data)
+    public function healthCheck()
     {
         $client = new \SoapClient($this->config['uri'], array(
             'trace' => 1,
@@ -43,7 +50,7 @@ class ElementService implements PaymentServiceInterface
         }
     }
 
-    public function token($data, $isPOS = false)
+    public function token($isPOS = false)
     {
         $client = new \SoapClient($this->config['uri'], array(
             'trace' => 1,
@@ -51,7 +58,7 @@ class ElementService implements PaymentServiceInterface
             'features' => 1
         ));
 
-        $transactionSetup = ExpressFactory::buildTransactionSetup($this->config, $data, $isPOS);
+        $transactionSetup = ExpressFactory::buildTransactionSetup($this->config, $this->data, $isPOS);
 
         try {
             $result = $client->__soapCall('TransactionSetup', array($transactionSetup));
@@ -64,22 +71,27 @@ class ElementService implements PaymentServiceInterface
         }
     }
 
-    public function processPayment($data)
+    public function authorize()
+    {
+        
+    }
+
+    public function processPayment()
     {
         echo 'Processing...';die;
     }
 
-    public function refund($data)
+    public function refund()
     {
         echo 'Refunding...';die;
     }
 
-    public function saveCard($data)
+    public function saveCard()
     {
         echo 'Saving...';die;
     }
 
-    public function payWithSavedCard($data)
+    public function payWithSavedCard()
     {
         echo 'Paying...';die;
     }

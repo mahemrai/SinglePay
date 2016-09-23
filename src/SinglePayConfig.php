@@ -5,7 +5,7 @@ namespace SinglePay;
  * @package SinglePay
  * @author  Mahendra Rai
  */
-class SPConfig
+class SinglePayConfig
 {
     /**
      * @var string

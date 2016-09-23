@@ -10,20 +10,20 @@ interface PaymentServiceInterface
     /**
      * @param  array $data
      */
-    public function processPayment($data);
+    public function processPayment();
 
     /**
      * @param  array $data
      */
-    public function refund($data);
+    public function refund();
 
     /**
      * @param  array $data
      */
-    public function saveCard($data);
+    public function saveCard();
 
     /**
      * @param  array $data
      */
-    public function payWithSavedCard($data);
+    public function payWithSavedCard();
 }

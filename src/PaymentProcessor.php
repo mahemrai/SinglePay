@@ -17,26 +17,27 @@ class PaymentProcessor
     /**
      * @param SPConfig $config
      */
-    public function __construct(SPConfig $config)
+    public function __construct(SinglePayConfig $config, SinglePayData $data)
     {
         $this->config = $config;
+        $this->data = $data;
     }
 
     /**
      * @param  string $method
      */
-    public function process($method, $data, $isPOS = false)
+    public function process($method, $isPOS = false)
     {
-        $paymentService = PaymentServiceFactory::createPaymentService($this->config);
+        $paymentService = PaymentServiceFactory::createPaymentService($this->config, $this->data);
 
         if (!method_exists($paymentService, $method)) {
             throw new \Exception('Undefined method called.');
         }
 
         if ($isPOS) {
-            $paymentService->$method($data, $isPOS);
+            $paymentService->$method($isPOS);
         } else {
-            $paymentService->$method($data);
+            $paymentService->$method();
         }
     }
 }
