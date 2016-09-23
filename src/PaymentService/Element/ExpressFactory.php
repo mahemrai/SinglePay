@@ -1,13 +1,18 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
+use SinglePay\PaymentService\Element\Express\Enum\PaymentAccountType;
+use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterBatchStatus;
+use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterOption;
 use SinglePay\PaymentService\Element\Express\Type\Address;
 use SinglePay\PaymentService\Element\Express\Type\Application;
 use SinglePay\PaymentService\Element\Express\Type\Credentials;
 use SinglePay\PaymentService\Element\Express\Type\PaymentAccount;
-use SinglePay\PaymentService\Element\Express\Type\Terminal;
-use SinglePay\PaymentService\Element\Express\Type\Transaction;
 use SinglePay\PaymentService\Element\Express\Method\HealthCheck;
+use SinglePay\PaymentService\Element\Express\Method\TransactionSetup;
+use SinglePay\PaymentService\Element\Builder\TerminalBuilder;
+use SinglePay\PaymentService\Element\Builder\TransactionBuilder;
+use SinglePay\PaymentService\Element\Builder\TransactionSetupBuilder;
 
 /**
  * @package SinglePay
@@ -16,6 +21,7 @@ use SinglePay\PaymentService\Element\Express\Method\HealthCheck;
 class ExpressFactory
 {
     /**
+     * Build an instance of HealthCheck call object.
      * @param  array $config
      * @return HealthCheck
      */
@@ -28,103 +34,52 @@ class ExpressFactory
     }
 
     /**
+     * Build an instance of TransactionSetup call object.
      * @param  array $config
      * @param  array $data
      * @return \SinglePay\PaymentService\Element\Express\Method\TransactionSetup
      */
-    public static function buildTransactionSetup($config, $data)
+    public static function buildTransactionSetup($config, $data, $isPOS = false)
     {
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
 
-        $transaction = new Transaction(
-            null,
-            null,
-            null,
-            $data['orderAmount'],
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            'Full',
-            'ECommerce',
-            null,
-            null,
-            'False',
-            'True',
-            'True',
-            'False',
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            'False',
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            'Default',
-            'Unknown'
-        );
-
-        $transactionSetup = new \SinglePay\PaymentService\Element\Express\Type\TransactionSetup(
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            'CreditCardSale',
-            'Null',
-            'True',
-            'False',
-            'True',
-            null,
-            null,
-            null,
-            null,
-            $config['returnUrl'],
-            null,
-            null,
-            null,
-            null,
-            'NotUsed'
-        );
-
-        if (strcasecmp($data['method'], 'create') == 0) {
-            $transactionSetup->TransactionSetupMethod = 'PaymentAccountCreate';
-        } elseif (strcasecmp($data['method'], 'update') == 0) {
-            $transactionSetup->TransactionSetupMethod = 'PaymentAccountUpdate';
+        /**
+         * TODO: These config validation needs to go somewhere else.
+         */
+        if (!isset($config['terminalId'])) {
+            throw new \Exception("Parameter 'terminalId' is required for this action.");
         }
 
-        $terminal = new Terminal(
-            '01',
-            'ECommerce',
-            'NotPresent',
-            'ECommerce',
-            'ManualKeyed',
-            'Provided',
-            'KeyEntered',
-            'ECommerce',
-            'NonAuthenticatedSecureECommerceTransaction',
-            'Regular',
-            'Internet',
-            null,
-            'Default',
-            null,
-            null,
-            null
-        );
+        if (!isset($config['returnUrl'])) {
+            throw new \Exception("Parameter 'returnUrl' is required for this action.");
+        }
+
+        // depending on whether the client is POS or Web - build an appropriate objects to
+        // initiate the transaction process
+        if ($isPOS) {
+            $transaction = TransactionBuilder::buildPOSTransaction($config, (string) $data['orderAmount']);
+            $transactionSetup = TransactionSetupBuilder::buildPOSSaleTransactionSetup($config);
+            $terminal = TerminalBuilder::buildPOSTerminal($config);
+        } else {
+            $transaction = TransactionBuilder::buildStandardTransaction($config, (string) $data['orderAmount']);
+
+            // Element's Hosted Payment supports process to create and update accounts along with a
+            // credit card sale. Therefore we need to ensure that we are sending appropriate parameter 
+            // values to generate tokens for each process.
+            // 
+            // Here, the method parameter can be either present in the data array or not. If a method
+            // parameter is passed in then it needs to be either 'create' or 'update'.
+            if (isset($data['method']) && $data['method'] === 'create') {
+                $transactionSetup = TransactionSetupBuilder::buildAccountCreateTransactionSetup($config);
+            } elseif(isset($data['method']) && $data['method'] === 'update') {
+                $transactionSetup = TransactionSetupBuilder::buildAccountUpdateTransactionSetup($config);
+            } else {
+                $transactionSetup = TransactionSetupBuilder::buildStandardSaleTransactionSetup($config);
+            }
+
+            $terminal = TerminalBuilder::buildStandardTerminal($config);
+        }
 
         $address = new Address(
             null,
@@ -147,21 +102,21 @@ class ExpressFactory
 
         $paymentAccount = new PaymentAccount(
             null,
-            'CreditCard',
+            PaymentAccountType::CreditCard,
             null,
             null,
             null,
-            'Null',
-            'Null'
+            PASSUpdaterBatchStatus::IncludedInNextBatch,
+            PASSUpdaterOption::AutoUpdateEnabled
         );
 
-        if (strcasecmp($data['method'], 'create') == 0) {
+        if (isset($data['method']) && strcasecmp($data['method'], 'create') == 0) {
             if (!isset($data['customerNo'])) {
                 throw new \Exception("Parameter 'customerNo' is required for this action.");
             }
 
             $paymentAccount->PaymentAccountReferenceNumber = $data['customerNo'];
-        } elseif (strcasecmp($data['method'], 'update') == 0) {
+        } elseif (isset($data['method']) && strcasecmp($data['method'], 'update') == 0) {
             if (!isset($data['customerNo'])) {
                 throw new \Exception("Parameter 'customerNo' is required for this action.");
             }
@@ -174,7 +129,7 @@ class ExpressFactory
             $paymentAccount->PaymentAccountReferenceNumber = $data['customerNo'];
         }
 
-        return new \SinglePay\PaymentService\Element\Express\Method\TransactionSetup(
+        return new TransactionSetup(
             $credentials,
             $application,
             $terminal,

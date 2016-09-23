@@ -25,7 +25,7 @@ class PaymentProcessor
     /**
      * @param  string $method
      */
-    public function process($method, $data)
+    public function process($method, $data, $isPOS = false)
     {
         $paymentService = PaymentServiceFactory::createPaymentService($this->config);
 
@@ -33,6 +33,10 @@ class PaymentProcessor
             throw new \Exception('Undefined method called.');
         }
 
-        $paymentService->$method($data);
+        if ($isPOS) {
+            $paymentService->$method($data, $isPOS);
+        } else {
+            $paymentService->$method($data);
+        }
     }
 }

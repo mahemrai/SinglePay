@@ -43,7 +43,7 @@ class ElementService implements PaymentServiceInterface
         }
     }
 
-    public function token($data)
+    public function token($data, $isPOS = false)
     {
         $client = new \SoapClient($this->config['uri'], array(
             'trace' => 1,
@@ -51,8 +51,10 @@ class ElementService implements PaymentServiceInterface
             'features' => 1
         ));
 
+        $transactionSetup = ExpressFactory::buildTransactionSetup($this->config, $data, $isPOS);
+
         try {
-            $result = $client->__soapCall('TransactionSetup', array(ExpressFactory::buildTransactionSetup($this->config, $data)));
+            $result = $client->__soapCall('TransactionSetup', array($transactionSetup));
 
             var_dump($result); die;
         } catch (\SoapFault $fault) {
