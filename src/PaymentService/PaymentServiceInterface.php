@@ -8,22 +8,39 @@ namespace SinglePay\PaymentService;
 interface PaymentServiceInterface
 {
     /**
-     * @param  array $data
+     * Perform health check of the payment service.
+     * @return array
+     */
+    public function healthCheck();
+
+    /**
+     * Authorise payment card.
+     * @param  boolean $useToken
+     * @return array
+     */
+    public function authorise($useToken = false);
+
+    /**
+     * Process payment.
+     * @return array
      */
     public function processPayment();
 
     /**
-     * @param  array $data
+     * Refund paid amount.
+     * @return array
      */
     public function refund();
 
     /**
-     * @param  array $data
+     * Save payment card with a payment service.
+     * @return array
      */
     public function saveCard();
 
     /**
-     * @param  array $data
+     * Process payment with a card saved with a payment service.
+     * @return array
      */
     public function payWithSavedCard();
 }

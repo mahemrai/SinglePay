@@ -31,6 +31,9 @@ class ElementService implements PaymentServiceInterface
         $this->data = $data;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function healthCheck()
     {
         $client = new \SoapClient($this->config['uri'], array(
@@ -71,26 +74,57 @@ class ElementService implements PaymentServiceInterface
         }
     }
 
-    public function authorize()
+    /**
+     * {@inheritdoc}
+     */
+    public function authorise($useToken = false)
     {
-        
+
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function processPayment()
     {
-        echo 'Processing...';die;
+        $client = new \SoapClient($this->config['uri'], array(
+            'trace' => 1,
+            'cache_wsdl' => WSDL_CACHE_NONE,
+            'features' => 1
+        ));
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($this->config, $this->data);
+
+        try {
+            $result = $client->__soapCall('CreditCardSale', array($creditCardSale));
+
+            var_dump($result); die;
+        } catch (\SoapFault $fault) {
+            var_dump($fault);
+            echo $client->__getLastRequest();
+            die;
+        }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function refund()
     {
         echo 'Refunding...';die;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function saveCard()
     {
         echo 'Saving...';die;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function payWithSavedCard()
     {
         echo 'Paying...';die;
