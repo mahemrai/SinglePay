@@ -271,7 +271,7 @@ class ExpressFactory
             $paymentCard->getExpiryMonth(),
             $paymentCard->getExpiryYear(),
             (is_null($paymentCard->getName())) ? null : $paymentCard->getName(),
-            (is_null($paymentCard->getCvv())) ? null : paymentCard->getCvv(),
+            (is_null($paymentCard->getCvv())) ? null : $paymentCard->getCvv(),
             null,
             null,
             null,
