@@ -6,7 +6,7 @@ use SinglePay\PaymentService\PaymentServiceInterface;
 use SinglePay\PaymentService\Element\ExpressFactory;
 
 /**
- * @package SinglePay
+ * ElementService class
  * @uses    PaymentServiceInterface
  * @author  Mahendra Rai
  */
@@ -36,7 +36,7 @@ class ElementService implements PaymentServiceInterface
      */
     public function healthCheck()
     {
-        $client = new \SoapClient($this->config['uri'], array(
+        $client = new \SoapClient($this->config['expressUrl'], array(
             'trace' => 1,
             'cache_wsdl' => WSDL_CACHE_NONE,
             'features' => 1
@@ -55,7 +55,7 @@ class ElementService implements PaymentServiceInterface
 
     public function token($isPOS = false)
     {
-        $client = new \SoapClient($this->config['uri'], array(
+        $client = new \SoapClient($this->config['expressUrl'], array(
             'trace' => 1,
             'cache_wsdl' => WSDL_CACHE_NONE,
             'features' => 1
@@ -87,7 +87,7 @@ class ElementService implements PaymentServiceInterface
      */
     public function processPayment()
     {
-        $client = new \SoapClient($this->config['uri'], array(
+        $client = new \SoapClient($this->config['expressUrl'], array(
             'trace' => 1,
             'cache_wsdl' => WSDL_CACHE_NONE,
             'features' => 1

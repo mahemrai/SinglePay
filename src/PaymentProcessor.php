@@ -4,18 +4,19 @@ namespace SinglePay;
 use SinglePay\PaymentService\PaymentServiceFactory;
 
 /**
- * @package SinglePay
+ * PaymentProcessor class
  * @author  Mahendra Rai
  */
 class PaymentProcessor
 {
     /**
-     * @var SPConfig
+     * @var SinglePayConfig
      */
     protected $config;
 
     /**
-     * @param SPConfig $config
+     * @param SinglePayConfig $config
+     * @param SinglePayData   $data
      */
     public function __construct(SinglePayConfig $config, SinglePayData $data)
     {
@@ -24,7 +25,8 @@ class PaymentProcessor
     }
 
     /**
-     * @param  string $method
+     * @param string  $method
+     * @param boolean $isPOS
      */
     public function process($method, $isPOS = false)
     {

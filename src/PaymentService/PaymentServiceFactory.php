@@ -6,7 +6,7 @@ use SinglePay\SinglePayData;
 use SinglePay\PaymentService\Element\ElementService;
 
 /**
- * @package SinglePay
+ * PaymentServiceFactory class
  * @author  Mahendra Rai
  */
 class PaymentServiceFactory
