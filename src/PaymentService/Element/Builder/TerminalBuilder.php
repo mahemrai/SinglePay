@@ -15,12 +15,16 @@ use SinglePay\PaymentService\Element\Express\Enum\TerminalEnvironmentCode;
 use SinglePay\PaymentService\Element\Express\Enum\TerminalType;
 
 /**
- * @package SinglePay
+ * Builder class for building Terminal object for specific clients with
+ * appropriate settings.
+ * 
  * @author  Mahendra Rai
  */
 class TerminalBuilder
 {
     /**
+     * Build a Terminal object for POS clients.
+     * 
      * @param  array    $config
      * @return Terminal
      */
@@ -47,6 +51,8 @@ class TerminalBuilder
     }
 
     /**
+     * Build Terminal object for standard Web clients.
+     * 
      * @param  array  $config
      * @return Terminal
      */

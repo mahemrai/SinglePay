@@ -2,6 +2,7 @@
 namespace SinglePay\PaymentService\Element;
 
 use SinglePay\SinglePayData;
+use SinglePay\PaymentService\Element\ExpressConfigValidator;
 use SinglePay\PaymentService\PaymentServiceInterface;
 use SinglePay\PaymentService\Element\ExpressFactory;
 
@@ -23,12 +24,18 @@ class ElementService implements PaymentServiceInterface
     protected $data;
 
     /**
+     * @var ExpressConfigValidator
+     */
+    protected $validator;
+
+    /**
      * @param array $config
      */
     public function __construct($config, SinglePayData $data)
     {
         $this->config = $config;
         $this->data = $data;
+        $this->validator = new ExpressConfigValidator();
     }
 
     /**

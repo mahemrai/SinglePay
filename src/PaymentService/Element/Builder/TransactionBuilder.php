@@ -8,7 +8,6 @@ use SinglePay\PaymentService\Element\Express\Enum\ReversalReason;
 use SinglePay\PaymentService\Element\Express\Enum\ReversalType;
 
 /**
- * @package SinglePay
  * @author  Mahendra Rai
  */
 class TransactionBuilder

@@ -57,17 +57,6 @@ class ExpressFactory
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
 
-        /**
-         * TODO: These config validation needs to go somewhere else.
-         */
-        if (!isset($config['terminalId'])) {
-            throw new \Exception("Parameter 'terminalId' is required for this action.");
-        }
-
-        if (!isset($config['returnUrl'])) {
-            throw new \Exception("Parameter 'returnUrl' is required for this action.");
-        }
-
         // depending on whether the client is POS or Web - build an appropriate objects to
         // initiate the transaction process
         if ($isPOS) {
