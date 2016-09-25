@@ -26,8 +26,13 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $config = new SinglePayConfig();
         $config->setServiceConfig(self::$testConfig);
 
-        $healthCheck = ExpressFactory::buildHealthCheck($config->getServiceConfig());
+        $healthCheck = ExpressFactory::buildHealthCheck($config);
         $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\HealthCheck', $healthCheck);
+    }
+
+    public function testBuildWebTransactionSetup()
+    {
+
     }
 
     public static function tearDownAfterClass()

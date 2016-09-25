@@ -1,6 +1,7 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
+use SinglePay\SinglePayConfig;
 use SinglePay\SinglePayData;
 use SinglePay\PaymentService\Element\ExpressConfigValidator;
 use SinglePay\PaymentService\PaymentServiceInterface;
@@ -29,9 +30,9 @@ class ElementService implements PaymentServiceInterface
     protected $validator;
 
     /**
-     * @param array $config
+     * @param SinglePayConfig $config
      */
-    public function __construct($config, SinglePayData $data)
+    public function __construct(SinglePayConfig $config, SinglePayData $data)
     {
         $this->config = $config;
         $this->data = $data;
@@ -43,7 +44,7 @@ class ElementService implements PaymentServiceInterface
      */
     public function healthCheck()
     {
-        $client = new \SoapClient($this->config['expressUrl'], array(
+        $client = new \SoapClient($this->config->getServiceConfig()['expressUrl'], array(
             'trace' => 1,
             'cache_wsdl' => WSDL_CACHE_NONE,
             'features' => 1
@@ -62,7 +63,7 @@ class ElementService implements PaymentServiceInterface
 
     public function token($isPOS = false)
     {
-        $client = new \SoapClient($this->config['expressUrl'], array(
+        $client = new \SoapClient($this->config->getServiceConfig()['expressUrl'], array(
             'trace' => 1,
             'cache_wsdl' => WSDL_CACHE_NONE,
             'features' => 1
@@ -94,7 +95,7 @@ class ElementService implements PaymentServiceInterface
      */
     public function processPayment()
     {
-        $client = new \SoapClient($this->config['expressUrl'], array(
+        $client = new \SoapClient($this->config->getServiceConfig()['expressUrl'], array(
             'trace' => 1,
             'cache_wsdl' => WSDL_CACHE_NONE,
             'features' => 1

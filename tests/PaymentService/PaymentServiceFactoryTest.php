@@ -13,6 +13,9 @@ class PaymentServiceFactoryTest extends PHPUnit_Framework_TestCase
 
         $data = new SinglePayData();
 
+        $this->assertInstanceOf('\SinglePay\SinglePayConfig', $config);
+        $this->assertInstanceOf('\SinglePay\SinglePayData', $data);
+
         $paymentService = PaymentServiceFactory::createPaymentService($config, $data);
         $this->assertInstanceOf('\SinglePay\PaymentService\Element\ElementService', $paymentService);
     }

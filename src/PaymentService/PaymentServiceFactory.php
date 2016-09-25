@@ -19,7 +19,7 @@ class PaymentServiceFactory
     {
         switch ($config->getServiceName()) {
             case 'element':
-                return new ElementService($config->getServiceConfig(), $data);
+                return new ElementService($config, $data);
             default:
                 throw new \Exception('Payment service does not exist.');
         }

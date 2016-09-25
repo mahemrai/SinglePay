@@ -94,7 +94,7 @@ class Card
         $this->TruncatedCardNumber = $TruncatedCardNumber;
         $this->ExpirationMonth = $ExpirationMonth;
         $this->ExpirationYear = $ExpirationYear;
-        $this->CardholderName = $CardholderName;
+        $this->CardHolderName = $CardHolderName;
         $this->CVV = $CVV;
         $this->CAVV = $CAVV;
         $this->XID = $XID;
@@ -109,7 +109,7 @@ class Card
         $this->CVVResponseCode = $CVVResponseCode;
         $this->CAVVResponseCode = $CAVVResponseCode;
         $this->CardLogo = $CardLogo;
-        $this->GiftCardSecurityCode = $GiftCardSecurityCode;
+        $this->GiftCardSecurityLogo = $GiftCardSecurityLogo;
         $this->AlternateCardNumber1 = $AlternateCardNumber1;
         $this->AlternateCardNumber2 = $AlternateCardNumber2;
         $this->AlternateCardNumber3 = $AlternateCardNumber3;

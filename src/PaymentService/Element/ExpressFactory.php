@@ -1,7 +1,9 @@
 <?php
 namespace SinglePay\PaymentService\Element;
 
+use SinglePay\SinglePayConfig;
 use SinglePay\SinglePayData;
+
 use SinglePay\PaymentService\Element\Express\Enum\PaymentAccountType;
 use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterBatchStatus;
 use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterOption;
@@ -37,8 +39,9 @@ class ExpressFactory
      * @param  array       $config
      * @return HealthCheck
      */
-    public static function buildHealthCheck($config)
+    public static function buildHealthCheck(SinglePayConfig $config)
     {
+        $config = $config->getServiceConfig();
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
 
@@ -51,8 +54,9 @@ class ExpressFactory
      * @param  SinglePayData    $data
      * @return TransactionSetup
      */
-    public static function buildTransactionSetup($config, SinglePayData $data, $isPOS = false)
+    public static function buildTransactionSetup(SinglePayConfig $config, SinglePayData $data, $isPOS = false)
     {
+        $config = $config->getServiceConfig();
         $extras = $data->getExtras();
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
@@ -149,8 +153,9 @@ class ExpressFactory
      * @param  SinglePayData  $data
      * @return CreditCardSale
      */
-    public static function buildCreditCardSale($config, SinglePayData $data)
+    public static function buildCreditCardSale(SinglePayConfig $config, SinglePayData $data)
     {
+        $config = $config->getServiceConfig();
         $paymentCard = $data->getCard();
         $billingAddress = $data->getBillingAddress();
         $shippingAddress = $data->getShippingAddress();
@@ -179,7 +184,6 @@ class ExpressFactory
             null,
             null,
             null,
-            null,
             EncryptionFormat::aDefault,
             null,
             null,
@@ -192,27 +196,32 @@ class ExpressFactory
             null,
             null,
             null,
+            null,
             null
         );
 
-        $address = new Address(
-            (is_null($billingAddress->getName())) ? null : $billingAddress->getName(),
-            (is_null($billingAddress->getAddress1())) ? null : $billingAddress->getAddress1(),
-            (is_null($billingAddress->getAddress2())) ? null : $billingAddress->getAddress2(),
-            (is_null($billingAddress->getCity())) ? null : $billingAddress->getCity(),
-            (is_null($billingAddress->getState())) ? null : $billingAddress->getState(),
-            (is_null($billingAddress->getZipcode())) ? null : $billingAddress->getZipcode(),
-            (is_null($billingAddress->getEmail())) ? null : $billingAddress->getEmail(),
-            (is_null($billingAddress->getPhone())) ? null : $billingAddress->getPhone(),
-            (is_null($shippingAddress->getName())) ? null : $shippingAddress->getName(),
-            (is_null($shippingAddress->getAddress1())) ? null : $shippingAddress->getAddress1(),
-            (is_null($shippingAddress->getAddress2())) ? null : $shippingAddress->getAddress2(),
-            (is_null($shippingAddress->getCity())) ? null : $shippingAddress->getCity(),
-            (is_null($shippingAddress->getState())) ? null : $shippingAddress->getState(),
-            (is_null($shippingAddress->getZipcode())) ? null : $shippingAddress->getZipcode(),
-            (is_null($shippingAddress->getEmail())) ? null : $shippingAddress->getEmail(),
-            (is_null($shippingAddress->getPhone())) ? null : $shippingAddress->getPhone()
-        );
+        if (is_null($billingAddress) && is_null($shippingAddress)) {
+            $address = null;
+        } else {
+            $address = new Address(
+                (is_null($billingAddress->getName())) ? null : $billingAddress->getName(),
+                (is_null($billingAddress->getAddress1())) ? null : $billingAddress->getAddress1(),
+                (is_null($billingAddress->getAddress2())) ? null : $billingAddress->getAddress2(),
+                (is_null($billingAddress->getCity())) ? null : $billingAddress->getCity(),
+                (is_null($billingAddress->getState())) ? null : $billingAddress->getState(),
+                (is_null($billingAddress->getZipcode())) ? null : $billingAddress->getZipcode(),
+                (is_null($billingAddress->getEmail())) ? null : $billingAddress->getEmail(),
+                (is_null($billingAddress->getPhone())) ? null : $billingAddress->getPhone(),
+                (is_null($shippingAddress->getName())) ? null : $shippingAddress->getName(),
+                (is_null($shippingAddress->getAddress1())) ? null : $shippingAddress->getAddress1(),
+                (is_null($shippingAddress->getAddress2())) ? null : $shippingAddress->getAddress2(),
+                (is_null($shippingAddress->getCity())) ? null : $shippingAddress->getCity(),
+                (is_null($shippingAddress->getState())) ? null : $shippingAddress->getState(),
+                (is_null($shippingAddress->getZipcode())) ? null : $shippingAddress->getZipcode(),
+                (is_null($shippingAddress->getEmail())) ? null : $shippingAddress->getEmail(),
+                (is_null($shippingAddress->getPhone())) ? null : $shippingAddress->getPhone()
+            );
+        }
 
         return new CreditCardSale(
             $credentials,
@@ -220,7 +229,7 @@ class ExpressFactory
             $terminal,
             $card,
             $transaction,
-            $address,
+            null,
             null
         );
     }
@@ -231,8 +240,9 @@ class ExpressFactory
      * @param  SinglePayData     $data
      * @return CreditCardAVSOnly
      */
-    public static function buildCreditCardAVSOnly($config, SinglePayData $data, $useToken = false)
+    public static function buildCreditCardAVSOnly(SinglePayConfig $config, SinglePayData $data, $useToken = false)
     {
+        $config = $config->getServiceConfig();
         $paymentCard = $data->getCard();
         $billingAddress = $data->getBillingAddress();
         $shippingAddress = $data->getShippingAddress();

@@ -31,8 +31,8 @@ class CreditCardSale
         Terminal $terminal,
         Card $card,
         Transaction $transaction,
-        Address $address,
-        ExtendedParameters $extendedParameters
+        $address,
+        $extendedParameters
     ){
         $this->credentials = $credentials;
         $this->application = $application;
