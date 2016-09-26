@@ -27,13 +27,13 @@ class TransactionSetup
     public $extendedParameters;
 
     public function __construct(
-        Credentials $credentials,
-        Application $application,
-        Terminal $terminal,
-        Transaction $transaction,
-        \SinglePay\PaymentService\Element\Express\Type\TransactionSetup $transactionSetup,
-        Address $address,
-        PaymentAccount $paymentAccount,
+        $credentials,
+        $application,
+        $terminal,
+        $transaction,
+        $transactionSetup,
+        $address,
+        $paymentAccount,
         $extendedParameters
     ){
         $this->credentials = $credentials;

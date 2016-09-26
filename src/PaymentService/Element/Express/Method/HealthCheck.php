@@ -10,7 +10,7 @@ class HealthCheck
 
 	public $application;
 
-	public function __construct(Credentials $credentials, Application $application)
+	public function __construct($credentials, $application)
 	{
 		$this->credentials = $credentials;
 		$this->application = $application;

@@ -127,7 +127,11 @@ class ExpressFactory
                 throw new \Exception("Parameter 'customerNo' is required for this action.");
             }
 
-            if (!isset($extras['paymentToken'])) {
+            if (is_null($data->getCard())) {
+                throw new \Exception("Card object is required for this action.");
+            }
+
+            if (is_null($data->getCard()->getToken())) {
                 throw new \Exception("Parameter 'paymentToken' is required for this action.");
             }
 

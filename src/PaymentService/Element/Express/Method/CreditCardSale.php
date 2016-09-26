@@ -26,11 +26,11 @@ class CreditCardSale
     public $extendedParameters;
 
     public function __construct(
-        Credentials $credentials,
-        Application $application,
-        Terminal $terminal,
-        Card $card,
-        Transaction $transaction,
+        $credentials,
+        $application,
+        $terminal,
+        $card,
+        $transaction,
         $address,
         $extendedParameters
     ){

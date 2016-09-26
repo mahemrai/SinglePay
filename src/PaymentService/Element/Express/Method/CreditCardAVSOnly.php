@@ -26,13 +26,13 @@ class CreditCardAVSOnly
     public $extendedParameters;
 
     public function __construct(
-        Credentials $credentials,
-        Application $application,
-        Terminal $terminal,
-        Card $card,
-        Transaction $transaction,
-        Address $address,
-        ExtendedParameters $extendedParameters
+        $credentials,
+        $application,
+        $terminal,
+        $card,
+        $transaction,
+        $address,
+        $extendedParameters
     ){
         $this->credentials = $credentials;
         $this->application = $application;
