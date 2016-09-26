@@ -1,6 +1,7 @@
 <?php
 use SinglePay\SinglePayData;
 use SinglePay\SinglePayConfig;
+use SinglePay\Entity\Address;
 use SinglePay\Entity\Card;
 use SinglePay\PaymentService\Element\ExpressFactory;
 use SinglePay\PaymentService\Element\Express\Type\Application;
@@ -221,6 +222,101 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         ));
 
         $transactionSetup = ExpressFactory::buildTransactionSetup($config, $data);
+    }
+
+    /**
+     * Test CreditCardSale call object is built with provided config details and data but no address. 
+     */
+    public function testBuildCreditCardSaleWithoutAddress()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card);
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
+        $this->assertNull($creditCardSale->address);
+    }
+
+    /**
+     * Test CreditCardSale call object is built with provided config details and data including address.
+     */
+    public function testBuildCreditCardSaleWithAddress()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $billingAddress = new Address();
+        $billingAddress->setAddress1('Test Street')
+                       ->setCity('Test City')
+                       ->setState('Test County')
+                       ->setZipcode('545454');
+
+        $shippingAddress = new Address();
+        $shippingAddress->setAddress1('Test Street')
+                       ->setCity('Test City')
+                       ->setState('Test County')
+                       ->setZipcode('545454');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card)
+             ->setBillingAddress($billingAddress)
+             ->setShippingAddress($shippingAddress);
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
+        $this->assertFalse(is_null($creditCardSale->address));
+    }
+
+    /**
+     * Test CreditCardSale call object build fails if no order amount is passed.
+     *
+     * @expectedException        Exception
+     * @expectedExceptionMessage Order amount is required for this action.
+     */
+    public function testBuildCreditCardSaleFailsWithNoOrderAmount()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
+    }
+
+    /**
+     * Test CreditCardSale call object build fails if no card is provided.
+     *
+     * @expectedException        Exception
+     * @expectedExceptionMessage Card information is required for this action.
+     */
+    public function testBuildCreditCardSaleFailsWithNoCard()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00');
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
     }
 
     /**

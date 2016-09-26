@@ -164,6 +164,10 @@ class ExpressFactory
         $billingAddress = $data->getBillingAddress();
         $shippingAddress = $data->getShippingAddress();
 
+        if (is_null($data->getOrderAmount())) {
+            throw new \Exception("Order amount is required for this action.");
+        }
+
         if (is_null($paymentCard)) {
             throw new \Exception("Card information is required for this action.");
         }
@@ -233,7 +237,7 @@ class ExpressFactory
             $terminal,
             $card,
             $transaction,
-            null,
+            $address,
             null
         );
     }
