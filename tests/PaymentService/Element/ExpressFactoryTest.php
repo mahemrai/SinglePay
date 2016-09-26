@@ -136,6 +136,92 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test TransactionSetup call object build fails for updating payment account if no card is passed.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Card object is required for this action.
+     */
+    public function testFailNoCardAccountUpdate()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+        $data->setCustomerNo('112')
+             ->setExtras(array(
+                'method' => 'update'
+             ));
+
+        $transactionSetup = ExpressFactory::buildTransactionSetup($config, $data);
+    }
+
+    /**
+     * Test TransactionSetup call object build fails for updating payment account if no token is passed.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Parameter 'paymentToken' is required for this action.
+     */
+    public function testFailNoTokenAccountUpdate()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+
+        $data = new SinglePayData();
+        $data->setCustomerNo('112')
+             ->setCard($card)
+             ->setExtras(array(
+                'method' => 'update'
+             ));
+
+        $transactionSetup = ExpressFactory::buildTransactionSetup($config, $data);
+    }
+
+     /**
+     * Test TransactionSetup call object build fails for creating payment account if no customer no. is pased.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Parameter 'customerNo' is required for this action.
+     */
+    public function testFailNoCustomerNoForAccountCreate()
+    {
+        $card = new Card();
+        $card->setToken('test-token');
+
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+
+        $data->setCard($card)
+             ->setExtras(array(
+                'method' => 'update'
+             ));
+
+        $transactionSetup = ExpressFactory::buildTransactionSetup($config, $data);
+    }
+
+    /**
+     * Test TransactionSetup call object build fails for updating payment account if no customer no. is pased.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Parameter 'customerNo' is required for this action.
+     */
+    public function testFailNoCustomerNoForAccountUpdate()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+        $data->setExtras(array(
+            'method' => 'create'
+        ));
+
+        $transactionSetup = ExpressFactory::buildTransactionSetup($config, $data);
+    }
+
+    /**
      * Reset config array after the end of tests.
      */
     public static function tearDownAfterClass()
