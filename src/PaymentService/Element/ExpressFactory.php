@@ -135,7 +135,7 @@ class ExpressFactory
                 throw new \Exception("Parameter 'paymentToken' is required for this action.");
             }
 
-            $paymentAccount->PaymentAccountID = $extras['paymentToken'];
+            $paymentAccount->PaymentAccountID = $data->getCard()->getToken();
             $paymentAccount->PaymentAccountReferenceNumber = $data->getCustomerNo();
         }
 

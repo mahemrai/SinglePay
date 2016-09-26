@@ -29,7 +29,9 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
             'acceptorId' => '3',
             'applicationId' => '2',
             'applicationName' => 'SinglePay Test',
-            'applicationVersion' => '1.0'
+            'applicationVersion' => '1.0',
+            'terminalId' => '009',
+            'returnUrl' => 'http://localhost'
         );
     }
 
