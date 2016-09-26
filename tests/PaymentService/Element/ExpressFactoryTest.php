@@ -162,7 +162,7 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
      * Test TransactionSetup call object build fails for updating payment account if no token is passed.
      * 
      * @expectedException        Exception
-     * @expectedExceptionMessage Parameter 'paymentToken' is required for this action.
+     * @expectedExceptionMessage Parameter 'token' is required for this action.
      */
     public function testFailNoTokenAccountUpdate()
     {
@@ -246,6 +246,7 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
         $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
         $this->assertNull($creditCardSale->address);
+        $this->assertNull($creditCardSale->extendedParameters);
     }
 
     /**
@@ -284,6 +285,7 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
         $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
         $this->assertFalse(is_null($creditCardSale->address));
+        $this->assertNull($creditCardSale->extendedParameters);
     }
 
     /**
@@ -317,6 +319,30 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $data->setOrderAmount('10.00');
 
         $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
+    }
+
+    /**
+     * Test CreditCardReversal call object is built with provided config details and data.
+     */
+    public function testBuildCreditCardReversal()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setToken('test-token')
+             ->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card);
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
     }
 
     /**

@@ -18,6 +18,7 @@ use SinglePay\PaymentService\Element\Express\Type\PaymentAccount;
 
 use SinglePay\PaymentService\Element\Express\Method\CreditCardSale;
 use SinglePay\PaymentService\Element\Express\Method\CreditCardAVSOnly;
+use SinglePay\PaymentService\Element\Express\Method\CreditCardReversal;
 use SinglePay\PaymentService\Element\Express\Method\HealthCheck;
 use SinglePay\PaymentService\Element\Express\Method\TransactionSetup;
 
@@ -29,13 +30,13 @@ use SinglePay\PaymentService\Element\Builder\TransactionSetupBuilder;
  * Factory class for building Express method call objects with all the required
  * data objects.
  * 
- * @package SinglePay
  * @author  Mahendra Rai
  */
 class ExpressFactory
 {
     /**
      * Build an instance of HealthCheck call object.
+     * 
      * @param  array       $config
      * @return HealthCheck
      */
@@ -50,6 +51,7 @@ class ExpressFactory
 
     /**
      * Build an instance of TransactionSetup call object.
+     * 
      * @param  array            $config
      * @param  SinglePayData    $data
      * @return TransactionSetup
@@ -132,7 +134,7 @@ class ExpressFactory
             }
 
             if (is_null($data->getCard()->getToken())) {
-                throw new \Exception("Parameter 'paymentToken' is required for this action.");
+                throw new \Exception("Parameter 'token' is required for this action.");
             }
 
             $paymentAccount->PaymentAccountID = $data->getCard()->getToken();
@@ -153,6 +155,7 @@ class ExpressFactory
 
     /**
      * Build an instance of CreditCardSale call object.
+     * 
      * @param  array          $config
      * @param  SinglePayData  $data
      * @return CreditCardSale
@@ -231,6 +234,12 @@ class ExpressFactory
             );
         }
 
+        if (!is_null($data->getCard()->getToken())) {
+            $extendedParameters = new ExtendedParameters('PaymentAccount', $data->getCard()->getToken());
+        } else {
+            $extendedParameters = null;
+        }
+
         return new CreditCardSale(
             $credentials,
             $application,
@@ -238,12 +247,13 @@ class ExpressFactory
             $card,
             $transaction,
             $address,
-            null
+            $extendedParameters
         );
     }
 
     /**
      * Build an instance of CreditCardAVSOnly call object.
+     * 
      * @param  array             $config
      * @param  SinglePayData     $data
      * @return CreditCardAVSOnly
@@ -330,6 +340,71 @@ class ExpressFactory
             $transaction,
             $address,
             null
+        );
+    }
+
+    /**
+     * Build an instance of CreditCardReversal call object.
+     * 
+     * @param  SinglePayConfig    $config
+     * @param  SinglePayData      $data
+     * @return CreditCardReversal
+     */
+    public static function buildCreditCardReversal(SinglePayConfig $config, SinglePayData $data)
+    {
+        if (is_null($data->getCard())) {
+            throw new \Exception("Card information is required for this action.");
+        }
+
+        if (!is_null($data->getCard()->getToken())) {
+            throw new \Exception("Parameter 'token' is required for this action.");
+        }
+
+        $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
+        $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
+        $transaction = TransactionBuilder::buildStandardTransaction($config, $data->getOrderAmount());
+        $terminal = TerminalBuilder::buildStandardTerminal($config);
+
+        $card = new Card(
+            null,
+            null,
+            null,
+            null,
+            $paymentCard->getNumber(),
+            null,
+            $paymentCard->getExpiryMonth(),
+            $paymentCard->getExpiryYear(),
+            (is_null($paymentCard->getName())) ? null : $paymentCard->getName(),
+            (is_null($paymentCard->getCvv())) ? null : $paymentCard->getCvv(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            EncryptionFormat::aDefault,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+
+        $extendedParameters = new ExtendedParameters('PaymentAccount', $data->getCard()->getToken());
+
+        return new CreditCardReversal(
+            $credentials,
+            $application,
+            $terminal,
+            $card,
+            $transaction,
+            $extendedParameters
         );
     }
 }

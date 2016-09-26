@@ -119,7 +119,23 @@ class ElementService implements PaymentServiceInterface
      */
     public function refund()
     {
-        echo 'Refunding...';die;
+        $client = new \SoapClient($this->config->getServiceConfig()['expressUrl'], array(
+            'trace' => 1,
+            'cache_wsdl' => WSDL_CACHE_NONE,
+            'features' => 1
+        ));
+
+        $creditCardReversal = ExpressFactory::buildCreditCardReversal($this->config, $this->data);
+
+        try {
+            $result = $client->__soapCall('CreditCardReversal', array($creditCardReversal));
+
+            var_dump($result); die;
+        } catch (\SoapFault $fault) {
+            var_dump($fault);
+            echo $client->__getLastRequest();
+            die;
+        }
     }
 
     /**
