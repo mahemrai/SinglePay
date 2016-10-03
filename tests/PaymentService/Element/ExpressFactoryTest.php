@@ -305,6 +305,48 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test CreditCardSale call object is built with provided config details and data
+     * that includes card token.
+     */
+    public function testBuildCreditCardSaleWithToken()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setToken('Hello')
+             ->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $billingAddress = new Address();
+        $billingAddress->setAddress1('Test Street')
+                       ->setCity('Test City')
+                       ->setState('Test County')
+                       ->setZipcode('545454');
+
+        $shippingAddress = new Address();
+        $shippingAddress->setAddress1('Test Street')
+                       ->setCity('Test City')
+                       ->setState('Test County')
+                       ->setZipcode('545454');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card)
+             ->setBillingAddress($billingAddress)
+             ->setShippingAddress($shippingAddress);
+
+        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
+        $this->assertFalse(is_null($creditCardSale->address));
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Type\ExtendedParameters', $creditCardSale->extendedParameters);
+        $this->assertInternalType('int', $creditCardSale->extendedParameters->Value->enc_type);
+    }
+
+    /**
      * Test CreditCardSale call object build fails if no card is provided.
      *
      * @expectedException        Exception
@@ -341,8 +383,155 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $data->setOrderAmount('10.00')
              ->setCard($card);
 
-        $creditCardSale = ExpressFactory::buildCreditCardSale($config, $data);
-        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardSale', $creditCardSale);
+        $creditCardReversal = ExpressFactory::buildCreditCardReversal($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardReversal', $creditCardReversal);
+        $this->assertInternalType('array', $creditCardReversal->extendedParameters);
+        $this->assertInternalType('int', $creditCardReversal->extendedParameters[0]->Value->enc_type);
+    }
+
+    /**
+     * Test CreditCardReversal call object build fails if no card is provided.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Card information is required for this action.
+     */
+    public function testBuildCreditCardReversalFailWithNoCard()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00');
+
+        $creditCardReversal = ExpressFactory::buildCreditCardReversal($config, $data);
+    }
+
+    /**
+     * Test CreditCardReversal call object build fails if card token is not provided.
+     * @expectedException        Exception
+     * @expectedExceptionMessage Parameter 'token' is required for this action.
+     */
+    public function testBuildCreditCardReversalFailWithNoToken()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card);
+
+        $creditCardReversal = ExpressFactory::buildCreditCardReversal($config, $data);
+    }
+
+    /**
+     * Test CreditCardVoid call object is built with the provided config details and data
+     * that includes card token.
+     */
+    public function testBuildCreditCardVoid()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setToken('test-token')
+             ->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card);
+
+        $creditCardVoid = ExpressFactory::buildCreditCardVoid($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardVoid', $creditCardVoid);
+        $this->assertInternalType('array', $creditCardVoid->extendedParameters);
+        $this->assertEquals('PaymentAccount', $creditCardVoid->extendedParameters[0]->Key);
+    }
+
+    /**
+     * Test CreditCardVoid build fails if no card is provided.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Card information is required for this action.
+     */
+    public function testBuildCreditCardVoidFailWithNoCard()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00');
+
+        $creditCardReversal = ExpressFactory::buildCreditCardVoid($config, $data);
+    }
+
+    /**
+     * Test CreditCardVoid fails if payment token is not provided.
+     * 
+     * @expectedException        Exception
+     * @expectedExceptionMessage Parameter 'token' is required for this action.
+     */
+    public function testBuildCreditCardVoidFailWithNoToken()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card);
+
+        $creditCardReversal = ExpressFactory::buildCreditCardVoid($config, $data);
+    }
+
+    public function testBuildCreditCardAVSOnly()
+    {
+        $config = new SinglePayConfig();
+        $config->setServiceConfig(self::$testConfig);
+
+        $card = new Card();
+        $card->setName('TEST')
+             ->setNumber('8696969')
+             ->setExpiryMonth('09')
+             ->setExpiryYear('18')
+             ->setCvv('200');
+
+        $billingAddress = new Address();
+        $billingAddress->setName('TEST')
+                       ->setAddress1('Test address 1')
+                       ->setAddress2('Test address 2')
+                       ->setCity('Test City')
+                       ->setState('Test State')
+                       ->setZipcode('Test Zipcode')
+                       ->setEmail('Test Email')
+                       ->setPhone('112212121212');
+
+        $shippingAddress = new Address();
+
+        $data = new SinglePayData();
+        $data->setOrderAmount('10.00')
+             ->setCard($card)
+             ->setBillingAddress($billingAddress)
+             ->setShippingAddress($shippingAddress);
+
+        $creditCardAVSOnly = ExpressFactory::buildCreditCardAVSOnly($config, $data);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Method\CreditCardAVSOnly', $creditCardAVSOnly);
+        $this->assertInstanceOf('\SinglePay\PaymentService\Element\Express\Type\Address', $creditCardAVSOnly->address);
     }
 
     /**

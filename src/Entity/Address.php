@@ -135,7 +135,7 @@ class Address
      */
     public function setEmail($email)
     {
-        $this->address1 = $address1;
+        $this->email = $email;
         return $this;
     }
 

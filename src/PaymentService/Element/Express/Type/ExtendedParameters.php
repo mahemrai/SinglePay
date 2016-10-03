@@ -10,6 +10,6 @@ class ExtendedParameters
     public function __construct($key, $value)
     {
         $this->Key = $key;
-        $this->value = $value;
+        $this->Value = $value;
     }
 }

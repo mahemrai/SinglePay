@@ -4,6 +4,8 @@ namespace SinglePay\PaymentService\Element;
 use SinglePay\SinglePayConfig;
 use SinglePay\SinglePayData;
 
+use SinglePay\PaymentService\Element\SoapAttributeGenerator;
+
 use SinglePay\PaymentService\Element\Express\Enum\PaymentAccountType;
 use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterBatchStatus;
 use SinglePay\PaymentService\Element\Express\Enum\PASSUpdaterOption;
@@ -13,13 +15,18 @@ use SinglePay\PaymentService\Element\Express\Type\Address;
 use SinglePay\PaymentService\Element\Express\Type\Application;
 use SinglePay\PaymentService\Element\Express\Type\Card;
 use SinglePay\PaymentService\Element\Express\Type\Credentials;
+use SinglePay\PaymentService\Element\Express\Type\DemandDepositAccount;
 use SinglePay\PaymentService\Element\Express\Type\ExtendedParameters;
 use SinglePay\PaymentService\Element\Express\Type\PaymentAccount;
 
 use SinglePay\PaymentService\Element\Express\Method\CreditCardSale;
 use SinglePay\PaymentService\Element\Express\Method\CreditCardAVSOnly;
 use SinglePay\PaymentService\Element\Express\Method\CreditCardReversal;
+use SinglePay\PaymentService\Element\Express\Method\CreditCardVoid;
 use SinglePay\PaymentService\Element\Express\Method\HealthCheck;
+use SinglePay\PaymentService\Element\Express\Method\PaymentAccountCreate;
+use SinglePay\PaymentService\Element\Express\Method\PaymentAccountDelete;
+use SinglePay\PaymentService\Element\Express\Method\PaymentAccountUpdate;
 use SinglePay\PaymentService\Element\Express\Method\TransactionSetup;
 
 use SinglePay\PaymentService\Element\Builder\TerminalBuilder;
@@ -235,7 +242,8 @@ class ExpressFactory
         }
 
         if (!is_null($data->getCard()->getToken())) {
-            $extendedParameters = new ExtendedParameters('PaymentAccount', $data->getCard()->getToken());
+            $soapAttribute = SoapAttributeGenerator::createSoapAttribute('PaymentAccount', 'PaymentAccountID', $data->getCard()->getToken());
+            $extendedParameters = new ExtendedParameters('PaymentAccount', $soapAttribute);
         } else {
             $extendedParameters = null;
         }
@@ -329,7 +337,8 @@ class ExpressFactory
         );
 
         if ($useToken) {
-            $extendedParameters = new ExtendedParameters('PaymentAccount', $paymentCard->getToken());
+            $soapAttribute = SoapAttributeGenerator::createSoapAttribute('PaymentAccount', 'PaymentAccountID', $data->getCard()->getToken());
+            $extendedParameters = new ExtendedParameters('PaymentAccount', $soapAttribute);
         }
 
         return new CreditCardAVSOnly(
@@ -356,9 +365,12 @@ class ExpressFactory
             throw new \Exception("Card information is required for this action.");
         }
 
-        if (!is_null($data->getCard()->getToken())) {
+        if (is_null($data->getCard()->getToken())) {
             throw new \Exception("Parameter 'token' is required for this action.");
         }
+
+        $config = $config->getServiceConfig();
+        $paymentCard = $data->getCard();
 
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
@@ -396,7 +408,8 @@ class ExpressFactory
             null
         );
 
-        $extendedParameters = new ExtendedParameters('PaymentAccount', $data->getCard()->getToken());
+        $soapAttribute = SoapAttributeGenerator::createSoapAttribute('PaymentAccount', 'PaymentAccountID', $paymentCard->getToken());
+        $extendedParameters = new ExtendedParameters('PaymentAccount', $soapAttribute);
 
         return new CreditCardReversal(
             $credentials,
@@ -404,7 +417,221 @@ class ExpressFactory
             $terminal,
             $card,
             $transaction,
-            $extendedParameters
+            array($extendedParameters)
+        );
+    }
+
+    /**
+     * Build an instance of CreditCardVoid call object with the provided config details and data.
+     * 
+     * @param  SinglePayConfig $config
+     * @param  SinglePayData   $data
+     * @return CreditCardVoid
+     */
+    public static function buildCreditCardVoid(SinglePayConfig $config, SinglePayData $data)
+    {
+        if (is_null($data->getCard())) {
+            throw new \Exception("Card information is required for this action.");
+        }
+
+        if (is_null($data->getCard()->getToken())) {
+            throw new \Exception("Parameter 'token' is required for this action.");
+        }
+
+        $config = $config->getServiceConfig();
+
+        $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
+        $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
+        $transaction = TransactionBuilder::buildStandardTransaction($config, $data->getOrderAmount());
+        $terminal = TerminalBuilder::buildStandardTerminal($config);
+
+        $soapAttribute = SoapAttributeGenerator::createSoapAttribute('PaymentAccount', 'PaymentAccountID', $data->getCard()->getToken());
+        $extendedParameters = new ExtendedParameters('PaymentAccount', $soapAttribute->enc_type);
+
+        return new CreditCardVoid(
+            $application,
+            $credentials,
+            $transaction,
+            $terminal,
+            array($extendedParameters)
+        );
+    }
+
+    /**
+     * Build an instance of PaymentAccountCreate call object with the provided config details and data.
+     * 
+     * @param  SinglePayConfig      $config
+     * @param  SinglePayData        $data
+     * @param  SimpleXMLElement
+     * @return PaymentAccountCreate
+     */
+    public static function buildPaymentAccountCreate(SinglePayConfig $config, SinglePay $data, $paymentAccount)
+    {
+        if (is_null($data->getCard())) {
+            throw new \Exception("Card information is required for this action.");
+        }
+
+        $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
+        $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
+
+        $paymentAccount = new PaymentAccount(
+            (string) $paymentAccount->PaymentAccountID,
+            (string) $paymentAccount->PaymentAccountType,
+            (string) $paymentAccount->PaymentAccountReferenceNumber,
+            (string) $paymentAccount->TransactionSetupID,
+            (string) $paymentAccount->PASSUpdaterBatchStatus,
+            (string) $paymentAccount->PASSUpdaterOption
+        );
+
+        $card = new Card(
+            null,
+            null,
+            null,
+            null,
+            $paymentCard->getNumber(),
+            null,
+            $paymentCard->getExpiryMonth(),
+            $paymentCard->getExpiryYear(),
+            (is_null($paymentCard->getName())) ? null : $paymentCard->getName(),
+            (is_null($paymentCard->getCvv())) ? null : $paymentCard->getCvv(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            EncryptionFormat::aDefault,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+
+        return new PaymentAccountCreate(
+            $credentials,
+            $application,
+            $paymentAccount,
+            $card,
+            null,
+            null,
+            null
+        );
+    }
+
+    /**
+     * Build an instance of PaymentAccountUpdate call object with the provided config details and data.
+     * 
+     * @param  SinglePayConfig      $config
+     * @param  SinglePayData        $data
+     * @param  SimpleXMLElement
+     * @return PaymentAccountUpdate
+     */
+    public static function buildPaymentAccountUpdate(SinglePayConfig $config, SinglePay $data, $paymentAccount)
+    {
+        if (is_null($data->getCard())) {
+            throw new \Exception("Card information is required for this action.");
+        }
+
+        if (!is_null($data->getCard()->getToken())) {
+            throw new \Exception("Parameter 'token' is required for this action.");
+        }
+
+        $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
+        $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
+
+        $paymentAccount = new PaymentAccount(
+            $data->getCard()->getToken(),
+            (string) $paymentAccount->PaymentAccountType,
+            (string) $paymentAccount->PaymentAccountReferenceNumber,
+            (string) $paymentAccount->TransactionSetupID,
+            (string) $paymentAccount->PASSUpdaterBatchStatus,
+            (string) $paymentAccount->PASSUpdaterOption
+        );
+
+        $card = new Card(
+            null,
+            null,
+            null,
+            null,
+            $paymentCard->getNumber(),
+            null,
+            $paymentCard->getExpiryMonth(),
+            $paymentCard->getExpiryYear(),
+            (is_null($paymentCard->getName())) ? null : $paymentCard->getName(),
+            (is_null($paymentCard->getCvv())) ? null : $paymentCard->getCvv(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            EncryptionFormat::aDefault,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+
+        return new PaymentAccountUpdate(
+            $credentials,
+            $application,
+            $paymentAccount,
+            $card,
+            null,
+            null,
+            null
+        );
+    }
+
+    /**
+     * Build an instance of PaymentAccountDelete call object with the provided config details and data.
+     * 
+     * @param  SinglePayConfig      $config
+     * @param  SinglePayData        $data
+     * @param  SimpleXMLElement
+     * @return PaymentAccountDelete
+     */
+    public static function buildPaymentAccountDelete(SinglePayConfig $config, SinglePay $data, $paymentAccount)
+    {
+        if (is_null($data->getCard())) {
+            throw new \Exception("Card information is required for this action.");
+        }
+
+        if (!is_null($data->getCard()->getToken())) {
+            throw new \Exception("Parameter 'token' is required for this action.");
+        }
+
+        $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
+        $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
+
+        $paymentAccount = new PaymentAccount(
+            $data->getCard()->getToken(),
+            (string) $paymentAccount->PaymentAccountType,
+            (string) $paymentAccount->PaymentAccountReferenceNumber,
+            (string) $paymentAccount->TransactionSetupID,
+            (string) $paymentAccount->PASSUpdaterBatchStatus,
+            (string) $paymentAccount->PASSUpdaterOption
+        );
+
+        return new PaymentAccountDelete(
+            $credentials,
+            $application,
+            $paymentAccount,
+            null
         );
     }
 }
