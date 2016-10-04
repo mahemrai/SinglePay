@@ -8,9 +8,9 @@ namespace SinglePay\PaymentService\Element;
 class SoapAttributeGenerator
 {
 	/**
-	 * @param  string   $type
-	 * @param  string   $attributeKey
-	 * @param  mixed    $attributeValue
+	 * @param  string     $type
+	 * @param  string     $attributeKey
+	 * @param  mixed      $attributeValue
 	 * @throws \Exception
 	 * @return \SoapVar
 	 */
