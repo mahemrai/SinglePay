@@ -3,8 +3,7 @@ namespace SinglePay\Entity;
 
 /**
  * Card class
- * @package SinglePay
- * @author  Mahendra Rai
+ * @author Mahendra Rai
  */
 class Card
 {

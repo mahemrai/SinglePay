@@ -14,6 +14,8 @@ use SinglePay\PaymentService\Element\ExpressFactory;
  */
 class ElementService implements PaymentServiceInterface
 {
+    use \SinglePay\PaymentService\ResponseValidable;
+
     /**
      * @var array
      */
@@ -30,13 +32,25 @@ class ElementService implements PaymentServiceInterface
     protected $validator;
 
     /**
+     * Array of successful express response codes.
+     * @var array
+     */
+    protected $expressCodes = array(0, 5);
+
+    /**
+     * Array of successful AVS response codes.
+     * @var array
+     */
+    protected $avsCodes = array('F', 'M', 'X', 'Y', '0');
+
+    /**
      * @param SinglePayConfig $config
      */
-    public function __construct(SinglePayConfig $config, SinglePayData $data)
+    public function __construct(SinglePayConfig $config, SinglePayData $data, ExpressConfigValidator $validator)
     {
         $this->config = $config;
         $this->data = $data;
-        $this->validator = new ExpressConfigValidator();
+        $this->validator = $validator;
     }
 
     /**
@@ -87,7 +101,26 @@ class ElementService implements PaymentServiceInterface
      */
     public function authorise($useToken = false)
     {
+        $client = new \SoapClient($this->config->getServiceConfig()['expressUrl'], array(
+            'trace' => 1,
+            'cache_wsdl' => WSDL_CACHE_NONE,
+            'features' => 1
+        ));
 
+        $creditCardAVSOnly = ExpressFactory::buildCreditCardAVSOnly($this->config, $this->data, $useToken);
+
+        try {
+            $result = $client->__soapCall('CreditCardAVSOnly', array($creditCardAVSOnly));
+            if ($this->validateResponse((int) $result->response->ExpressResponseCode, $this->expressCodes)) {
+                if ($this->validateResponse((string) $result->response->Card->AVSResponseCode, $this->avsCodes)) {
+                    return $result;
+                }
+            }
+        } catch (Exception $e) {
+            var_dump($fault);
+            echo $client->__getLastRequest();
+            die;
+        }
     }
 
     /**

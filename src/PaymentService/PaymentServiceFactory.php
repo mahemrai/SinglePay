@@ -4,6 +4,7 @@ namespace SinglePay\PaymentService;
 use SinglePay\SinglePayConfig;
 use SinglePay\SinglePayData;
 use SinglePay\PaymentService\Element\ElementService;
+use SinglePay\PaymentService\Element\ExpressConfigValidator;
 
 /**
  * PaymentServiceFactory class
@@ -19,7 +20,7 @@ class PaymentServiceFactory
     {
         switch ($config->getServiceName()) {
             case 'element':
-                return new ElementService($config, $data);
+                return new ElementService($config, $data, new ExpressConfigValidator());
             default:
                 throw new \Exception('Payment service does not exist.');
         }

@@ -3,6 +3,7 @@ use SinglePay\SinglePayData;
 use SinglePay\SinglePayConfig;
 use SinglePay\Entity\Address;
 use SinglePay\Entity\Card;
+use SinglePay\Entity\Order;
 use SinglePay\PaymentService\Element\ExpressFactory;
 use SinglePay\PaymentService\Element\Express\Type\Application;
 use SinglePay\PaymentService\Element\Express\Type\Credentials;
@@ -499,6 +500,9 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $creditCardReversal = ExpressFactory::buildCreditCardVoid($config, $data);
     }
 
+    /**
+     * Test CreditCardAVSOnly call object is built with the provided config details and data.
+     */
     public function testBuildCreditCardAVSOnly()
     {
         $config = new SinglePayConfig();
@@ -510,6 +514,10 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
              ->setExpiryMonth('09')
              ->setExpiryYear('18')
              ->setCvv('200');
+
+        $order = new Order();
+        $order->setAmount('10.00')
+              ->setCustomerNo('1990');
 
         $billingAddress = new Address();
         $billingAddress->setName('TEST')
@@ -524,7 +532,7 @@ class ExpressFactoryTest extends PHPUnit_Framework_TestCase
         $shippingAddress = new Address();
 
         $data = new SinglePayData();
-        $data->setOrderAmount('10.00')
+        $data->setOrder($order)
              ->setCard($card)
              ->setBillingAddress($billingAddress)
              ->setShippingAddress($shippingAddress);

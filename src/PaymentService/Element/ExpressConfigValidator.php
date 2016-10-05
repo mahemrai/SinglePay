@@ -5,6 +5,7 @@ use SinglePay\PaymentService\ConfigValidator;
 
 /**
  * ExpressConfigValidator class
+ * @uses   ConfigValidator
  * @author Mahendra Rai
  */
 class ExpressConfigValidator extends ConfigValidator

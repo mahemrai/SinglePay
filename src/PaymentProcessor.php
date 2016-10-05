@@ -37,9 +37,9 @@ class PaymentProcessor
         }
 
         if ($isPOS) {
-            $paymentService->$method($isPOS);
+            return $paymentService->$method($isPOS);
         } else {
-            $paymentService->$method();
+            return $paymentService->$method();
         }
     }
 }

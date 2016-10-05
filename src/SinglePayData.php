@@ -3,6 +3,7 @@ namespace SinglePay;
 
 use SinglePay\Entity\Address;
 use SinglePay\Entity\Card;
+use SinglePay\Entity\Order;
 
 /**
  * SinglePayData class
@@ -20,6 +21,11 @@ class SinglePayData
      * @var string
      */
     protected $orderAmount;
+
+    /**
+     * @var Order
+     */
+    protected $order;
 
     /**
      * @var Card
@@ -82,8 +88,28 @@ class SinglePayData
     }
 
     /**
+     * Set order.
+     * @param  Order         $order
+     * @return SinglePayData
+     */
+    public function setOrder(Order $order)
+    {
+        $this->order = $order;
+        return $this;
+    }
+
+    /**
+     * Get order.
+     * @return Order
+     */
+    public function getOrder()
+    {
+        return $this->order;
+    }
+
+    /**
      * Set card.
-     * @param  Card  $card
+     * @param  Card          $card
      * @return SinglePayData
      */
     public function setCard(Card $card)

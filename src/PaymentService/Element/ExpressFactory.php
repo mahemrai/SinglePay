@@ -283,7 +283,7 @@ class ExpressFactory
 
         $application = new Application($config['applicationId'], $config['applicationName'], $config['applicationVersion']);
         $credentials = new Credentials($config['accountId'], $config['accountToken'], $config['acceptorId'], NULL);
-        $transaction = TransactionBuilder::buildStandardTransaction($config, $data->getOrderAmount());
+        $transaction = TransactionBuilder::buildStandardTransaction($config, $data->getOrder()->getAmount());
         $terminal = TerminalBuilder::buildStandardTerminal($config);
 
         $card = new Card(
@@ -301,8 +301,8 @@ class ExpressFactory
             null,
             null,
             null,
-            null,
             EncryptionFormat::aDefault,
+            null,
             null,
             null,
             null,
